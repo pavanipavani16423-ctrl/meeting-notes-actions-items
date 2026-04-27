@@ -1,31 +1,26 @@
-from google import genai
-import os
-from dotenv import load_dotenv
-from prompt import PROMPT_TEMPLATE
-
-load_dotenv()
-
-api_key = os.getenv("GEMINI_API_KEY")
-
-if not api_key:
-    raise ValueError("API key not found. Check your .env file.")
-
-client = genai.Client(api_key=api_key)
+from typing import List
+from pydantic import BaseModel, Field
 
 
-def get_llm_response(user_input):
-    try:
-        prompt = PROMPT_TEMPLATE.format(input_text=user_input)
+class ActionItem(BaseModel):
+    task: str = Field(
+        description="The task to be completed"
+    )
+    owner: str = Field(
+        default="not_available",
+        description="Person responsible for the task"
+    )
+    deadline: str = Field(
+        default="not_available",
+        description="Deadline or due date for the task"
+    )
+    priority: str = Field(
+        default="Medium",
+        description="Priority level: High, Medium, or Low"
+    )
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={
-                "temperature": 0.0
-            }
-        )
 
-        return response.text
-
-    except Exception as e:
-        return f"ERROR: {str(e)}"
+class ActionItemsOutput(BaseModel):
+    actions: List[ActionItem] = Field(
+        description="List of all action items extracted from meeting notes"
+    )
